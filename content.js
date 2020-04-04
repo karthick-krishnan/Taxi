@@ -1,0 +1,3 @@
+/*
+it interacts to the content in the which the browser provides
+*/
