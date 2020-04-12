@@ -1,3 +1,10 @@
 {
-  "env": "development"
+  "env": "development",
+  "dbConfig": {
+    "apiKey": "AIzaSyBWd7JMABVmafor9-snSD8aEVhGi7f4MXE",
+    "authDomain": "taxi-10190.firebaseapp.com",
+    "databaseURL": "https://taxi-10190.firebaseio.com/",
+    "projectId": "taxi-10190",
+    "storageBucket": "taxi-10190.appspot.com"
+  }
 }
