@@ -71,14 +71,20 @@ optionsLink.addEventListener("click", function (e) {
 
 //Creating a meeting
 createMeeting.addEventListener("click", function () {
+  debugger;
   const meetingRef = firebase.database().ref('meeting');
   meetingRef.once("value", function (snapshot, error) {
+    debugger;
     if (error) {
       console.log('err', error);
     } else {
-      const response = snapshot.val();
+      console.log('response');
+      let response = snapshot.val();
+      response = response ? response : {};
+      console.log('response', response)
       const meetingId = Math.floor(100000 + Math.random() * 900000);
       response[meetingId] = { a: { initiated: true } };
+      console.log()
       meetingRef.set(response).then(function () {
         alert('Meeting added successfully!');
       }).catch(function (error) {
