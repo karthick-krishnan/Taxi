@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
             statusButton.style.backgroundColor = "green";
         } else {
             statusButton.innerText = 'go_online';
-            statusButton.style.backgroundColor = "red";
+            statusButton.style.backgroundColor = "blue";
         }
 
     });

@@ -1,10 +1,15 @@
 import ext from "./utils/ext";
 import storage from "./utils/storage";
+import firebase from "../../config/db";
 
-var popup = document.getElementById("app");
-storage.get('color', function(resp) {
+//Assigining ids from dom elements
+const popup = document.getElementById("app");
+const createMeeting = document.getElementById("create-meeting");
+const joinMeeting = document.getElementById("join-meeting");
+
+storage.get('color', function (resp) {
   var color = resp.color;
-  if(color) {
+  if (color) {
     popup.style.backgroundColor = color
   }
 });
@@ -30,25 +35,25 @@ var renderMessage = (message) => {
 var renderBookmark = (data) => {
   var displayContainer = document.getElementById("display-container")
   debugger
-  if(data) {
+  if (data) {
     var tmpl = template(data);
-    displayContainer.innerHTML = tmpl;  
+    displayContainer.innerHTML = tmpl;
   } else {
     renderMessage("Sorry, could not extract this page's title and URL")
   }
 }
 
-ext.tabs.query({active: true, currentWindow: true}, function(tabs) {
+ext.tabs.query({ active: true, currentWindow: true }, function (tabs) {
   var activeTab = tabs[0];
   chrome.tabs.sendMessage(activeTab.id, { action: 'process-page' }, renderBookmark);
 });
 
-popup.addEventListener("click", function(e) {
-  if(e.target && e.target.matches("#save-btn")) {
+popup.addEventListener("click", function (e) {
+  if (e.target && e.target.matches("#save-btn")) {
     e.preventDefault();
     var data = e.target.getAttribute("data-bookmark");
-    ext.runtime.sendMessage({ action: "perform-save", data: data }, function(response) {
-      if(response && response.action === "saved") {
+    ext.runtime.sendMessage({ action: "perform-save", data: data }, function (response) {
+      if (response && response.action === "saved") {
         renderMessage("Your bookmark was saved successfully!");
       } else {
         renderMessage("Sorry, there was an error while saving your bookmark.");
@@ -58,7 +63,57 @@ popup.addEventListener("click", function(e) {
 });
 
 var optionsLink = document.querySelector(".js-options");
-optionsLink.addEventListener("click", function(e) {
+optionsLink.addEventListener("click", function (e) {
   e.preventDefault();
-  ext.tabs.create({'url': ext.extension.getURL('options.html')});
+  ext.tabs.create({ 'url': ext.extension.getURL('options.html') });
 })
+
+
+//Creating a meeting
+createMeeting.addEventListener("click", function () {
+  debugger;
+  const meetingRef = firebase.database().ref('meeting');
+  meetingRef.once("value", function (snapshot, error) {
+    debugger;
+    if (error) {
+      console.log('err', error);
+    } else {
+      console.log('response');
+      let response = snapshot.val();
+      response = response ? response : {};
+      console.log('response', response)
+      const meetingId = Math.floor(100000 + Math.random() * 900000);
+      response[meetingId] = { a: { initiated: true } };
+      console.log()
+      meetingRef.set(response).then(function () {
+        alert('Meeting added successfully!');
+      }).catch(function (error) {
+        console.log(error);
+      });
+    }
+  });
+});
+
+//Joining a meeting
+joinMeeting.addEventListener("click", function () {
+  const value = document.getElementById('join').value;
+  const meetingRefId = firebase.database().ref(`meeting/${value}`);
+  meetingRefId.once("value", function (snapshot, error) {
+    if (error) {
+      console.log('err', error);
+    } else {
+      const response = snapshot.val();
+      if (response && response.a.initiated) {
+        response['b'] = { 'received': true };
+        meetingRefId.set(response).then(function () {
+          alert('Meeting Joined successfully!');
+        }).catch(function (error) {
+          console.log(error);
+        });
+      } else {
+        alert('You have entered a wrong meeting Id!');
+      }
+    }
+  });
+
+});
